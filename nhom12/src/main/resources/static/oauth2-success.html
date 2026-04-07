@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đang xử lý đăng nhập...</title>
+</head>
+<body>
+<script>
+    // Lấy thông tin từ query params
+    const urlParams = new URLSearchParams(window.location.search);
+    const fullName = urlParams.get('fullName');
+    const role = urlParams.get('role');
+    
+    // Lưu vào localStorage
+    if (fullName && role) {
+        localStorage.setItem("loggedInUser", fullName);
+        localStorage.setItem("userRole", role);
+    }
+    
+    // Chuyển hướng sang trang chủ (hoặc bệnh nhân)
+    window.location.href = '/';
+</script>
+</body>
+</html>

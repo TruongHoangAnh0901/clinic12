@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng Điều Khiển Của Bệnh Nhân | Nhóm 12 Clinic</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #005bea;
+            --secondary: #00c6fb;
+            --bg-color: #f4f7f6;
+        }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg-color); }
+        .navbar-brand { font-size: 1.5rem; color: var(--primary) !important; font-weight: bold; }
+        .dashboard-container { margin-top: 30px; }
+        .nav-pills .nav-link { color: #333; font-weight: 500; border-radius: 10px; padding: 12px 20px; margin-bottom: 10px; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .nav-pills .nav-link.active { background: var(--primary); color: white; }
+        .nav-pills .nav-link i { width: 25px; }
+        .content-card { background: white; border-radius: 15px; padding: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); min-height: 500px; }
+        .badge-status { font-size: 0.85rem; padding: 6px 12px; border-radius: 20px; }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg bg-white shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="fa-solid fa-square-plus me-2"></i>NHÓM 12 CLINIC</a>
+            <div class="d-flex align-items-center ms-auto">
+                <div class="dropdown">
+                    <a class="btn btn-light dropdown-toggle d-flex align-items-center border rounded-pill px-3" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="fa-solid fa-circle-user text-primary fs-4 me-2"></i>
+                        <span class="fw-bold" id="userNameDisplay">Bệnh Nhân</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
+                        <li><a class="dropdown-item py-2 text-danger" href="#" onclick="logout()"><i class="fa-solid fa-right-from-bracket me-2"></i>Đăng xuất</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <div class="container dashboard-container">
+        <div class="row">
+            <!-- SIDEBAR TABS -->
+            <div class="col-md-3 mb-4">
+                <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                    <button class="nav-link active text-start" id="v-pills-booking-tab" data-bs-toggle="pill" data-bs-target="#v-pills-booking" type="button" role="tab">
+                        <i class="fa-solid fa-calendar-plus text-primary"></i> Đặt Lịch Khám
+                    </button>
+                    <button class="nav-link text-start" id="v-pills-appointments-tab" data-bs-toggle="pill" data-bs-target="#v-pills-appointments" type="button" role="tab">
+                        <i class="fa-solid fa-calendar-check text-success"></i> Lịch Khám Của Tôi
+                    </button>
+                    <button class="nav-link text-start" id="v-pills-records-tab" data-bs-toggle="pill" data-bs-target="#v-pills-records" type="button" role="tab">
+                        <i class="fa-solid fa-notes-medical text-info"></i> Hồ Sơ Bệnh Án
+                    </button>
+                    <button class="nav-link text-start" id="v-pills-services-tab" data-bs-toggle="pill" data-bs-target="#v-pills-services" type="button" role="tab">
+                        <i class="fa-solid fa-briefcase-medical text-warning"></i> Dịch Vụ Y Tế
+                    </button>
+                </div>
+            </div>
+
+            <!-- TABS CONTENT -->
+            <div class="col-md-9">
+                <div class="tab-content" id="v-pills-tabContent">
+                    
+                    <!-- TAB 1: ĐẶT LỊCH -->
+                    <div class="tab-pane fade show active" id="v-pills-booking" role="tabpanel">
+                        <div class="content-card">
+                            <h4 class="fw-bold mb-4"><i class="fa-solid fa-calendar-plus text-primary me-2"></i>Đặt Lịch Khám Mới</h4>
+                            <div id="bookingMsg" style="display:none;"></div>
+                            
+                            <form id="bookingForm" onsubmit="submitBooking(event)">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Chuyên Khoa</label>
+                                        <select class="form-select" id="specialtySelect" required>
+                                            <option value="">-- Chọn chuyên khoa --</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Bác Sĩ</label>
+                                        <select class="form-select" id="doctorSelect">
+                                            <option value="">-- Có thể để trống hoặc chọn bác sĩ --</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label class="form-label fw-bold text-primary">Dịch Vụ Đi Kèm (Không bắt buộc)</label>
+                                        <select class="form-select border-primary" id="serviceSelectBooking">
+                                            <option value="">-- Chọn dịch vụ y tế kèm theo nếu muốn --</option>
+                                        </select>
+                                        <div class="form-text">Bạn có thể chọn dịch vụ cụ thể để bác sĩ chuẩn bị tốt hơn.</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Ngày Khám</label>
+                                        <input type="date" class="form-control" id="appointmentDate" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Giờ Khám</label>
+                                        <input type="time" class="form-control" id="appointmentTime" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold">Số điện thoại liên hệ</label>
+                                        <input type="text" class="form-control" id="patientPhone" placeholder="09xxxx..." required>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label fw-bold">Lý Do Khám / Triệu Chứng</label>
+                                        <textarea class="form-control" id="reason" rows="3" placeholder="Mô tả triệu chứng của bạn..." required></textarea>
+                                    </div>
+                                    <div class="col-12 mt-4 text-end">
+                                        <button type="submit" class="btn btn-primary px-4 py-2 rounded-pill shadow-sm"><i class="fa-solid fa-paper-plane me-2"></i>Gửi Đăng Ký</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: LỊCH KHÁM CỦA TÔI -->
+                    <div class="tab-pane fade" id="v-pills-appointments" role="tabpanel">
+                        <div class="content-card">
+                            <h4 class="fw-bold mb-4"><i class="fa-solid fa-list-check text-success me-2"></i>Danh Sách Lịch Khám</h4>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light"><tr>
+                                        <th>Ngày Khám</th><th>Giờ</th><th>Bác Sĩ</th><th>Lý do</th><th>Trạng Thái</th>
+                                    </tr></thead>
+                                    <tbody id="myAppointmentsTable">
+                                        <tr><td colspan="5" class="text-center text-muted py-4">Đang tải...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: HỒ SƠ BỆNH ÁN -->
+                    <div class="tab-pane fade" id="v-pills-records" role="tabpanel">
+                        <div class="content-card">
+                            <h4 class="fw-bold mb-4"><i class="fa-solid fa-notes-medical text-info me-2"></i>Hồ Sơ Bệnh Án Của Tôi</h4>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light"><tr>
+                                        <th>Ngày Khám</th><th>Bác Sĩ</th><th>Chẩn Đoán</th><th>Đơn Thuốc</th><th>Ghi Chú</th>
+                                    </tr></thead>
+                                    <tbody id="myRecordsTable">
+                                        <tr><td colspan="5" class="text-center text-muted py-4">Đang tải...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 4: DỊCH VỤ Y TẾ -->
+                    <div class="tab-pane fade" id="v-pills-services" role="tabpanel">
+                        <div class="content-card">
+                            <h4 class="fw-bold mb-4"><i class="fa-solid fa-briefcase-medical text-warning me-2"></i>Bảng Giá Dịch Vụ Y Tế Thực Tế</h4>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light"><tr>
+                                        <th>Tên Dịch Vụ</th><th>Mô tả</th><th>Chi Phí (VND)</th>
+                                    </tr></thead>
+                                    <tbody id="patientServicesTable">
+                                        <tr><td colspan="3" class="text-center text-muted py-4">Đang tải...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 1. KIỂM TRA ĐĂNG NHẬP
+        const loggedInUserId = localStorage.getItem("loggedInUserId");
+        const loggedInUser = localStorage.getItem("loggedInUser");
+        const userRole = localStorage.getItem("userRole");
+
+        if (!loggedInUserId || userRole !== "ROLE_PATIENT") {
+            window.location.href = "/login.html";
+        }
+        document.getElementById("userNameDisplay").textContent = loggedInUser || "Bệnh Nhân";
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = "/";
+        }
+
+        // 2. LOAD DATA CHO FORM ĐẶT LỊCH
+        async function loadFormData() {
+            // Load chuyên khoa
+            try {
+                const resSpec = await fetch('/api/specialties');
+                let specialties = await resSpec.json();
+                if (specialties.content) specialties = specialties.content;
+                const specSelect = document.getElementById('specialtySelect');
+                specialties.forEach(s => {
+                    if (s.active) {
+                        const opt = document.createElement('option');
+                        opt.value = s.name; // Tạm thời dùng Name
+                        opt.textContent = s.name;
+                        specSelect.appendChild(opt);
+                    }
+                });
+            } catch (e) {}
+
+            // Load bác sĩ
+            try {
+                const resDoc = await fetch('/api/doctors');
+                let doctors = await resDoc.json();
+                if (doctors.content) doctors = doctors.content;
+                const docSelect = document.getElementById('doctorSelect');
+                doctors.forEach(d => {
+                    if (d.active) {
+                        const opt = document.createElement('option');
+                        opt.value = d.id;
+                        opt.textContent = "BS. " + d.fullName + (d.specialtyName ? ` (${d.specialtyName})` : "");
+                        docSelect.appendChild(opt);
+                    }
+                });
+            } catch (e) {}
+
+            // Load dịch vụ y tế
+            try {
+                const resSrv = await fetch('/api/medical-services');
+                let services = await resSrv.json();
+                if (services.content) services = services.content;
+                const srvSelect = document.getElementById('serviceSelectBooking');
+                services.forEach(s => {
+                    if (s.active) {
+                        const opt = document.createElement('option');
+                        opt.value = s.id;
+                        opt.textContent = `${s.name} (${new Intl.NumberFormat('vi-VN').format(s.price)} VND)`;
+                        srvSelect.appendChild(opt);
+                    }
+                });
+            } catch (e) {}
+        }
+
+        // 3. XỬ LÝ ĐẶT LỊCH
+        async function submitBooking(e) {
+            e.preventDefault();
+            const payload = {
+                patientName: loggedInUser,
+                patientPhone: document.getElementById('patientPhone').value,
+                appointmentDate: document.getElementById('appointmentDate').value,
+                appointmentTime: document.getElementById('appointmentTime').value,
+                reason: document.getElementById('reason').value,
+                status: "CHỜ DUYỆT",
+                patientUser: { id: loggedInUserId }
+            };
+            
+            const docId = document.getElementById('doctorSelect').value;
+            if (docId) payload.doctor = { id: docId };
+
+            const srvId = document.getElementById('serviceSelectBooking').value;
+            if (srvId) payload.medicalService = { id: srvId };
+
+            const msg = document.getElementById('bookingMsg');
+            try {
+                const res = await fetch('/api/appointments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    msg.style.display = 'block';
+                    msg.className = 'alert alert-success';
+                    msg.textContent = 'Đặt lịch khám thành công! Vui lòng chờ xác nhận.';
+                    document.getElementById('bookingForm').reset();
+                    loadAppointments(); // Cập nhật lại lịch trình
+                } else {
+                    msg.style.display = 'block';
+                    msg.className = 'alert alert-danger';
+                    msg.textContent = 'Có lỗi xảy ra, vui lòng thử lại!';
+                }
+            } catch (error) {
+                msg.style.display = 'block';
+                msg.className = 'alert alert-danger';
+                msg.textContent = 'Mất kết nối máy chủ!';
+            }
+        }
+
+        // 4. LOAD LỊCH KHÁM CỦA TÔI
+        function statusBadge(status) {
+            const map = {
+                'CHỜ DUYỆT':   'badge-status bg-warning text-dark',
+                'ĐÃ XÁC NHẬN': 'badge-status bg-info text-white',
+                'HOÀN THÀNH':  'badge-status bg-success',
+                'ĐÃ HỦY':      'badge-status bg-secondary'
+            };
+            return `<span class="${map[status] || 'badge-status bg-light text-dark'}">${status}</span>`;
+        }
+
+        async function loadAppointments() {
+            try {
+                const res = await fetch(`/api/appointments/patient/${loggedInUserId}`);
+                const data = await res.json();
+                const tbody = document.getElementById('myAppointmentsTable');
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Bạn chưa chưa có lịch hẹn nào.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = data.map(a => `
+                    <tr>
+                        <td class="fw-bold">${a.appointmentDate}</td>
+                        <td>${a.appointmentTime}</td>
+                        <td>${a.doctor ? 'BS. ' + a.doctor.fullName : 'Bác sĩ trực'}</td>
+                        <td>
+                            ${a.medicalService ? `<span class="badge bg-light text-primary border border-primary mb-1 d-block">${a.medicalService.name}</span>` : ''}
+                            ${a.reason}
+                        </td>
+                        <td>${statusBadge(a.status)}</td>
+                    </tr>
+                `).join('');
+            } catch (e) {}
+        }
+
+        // 5. LOAD HỒ SƠ BỆNH ÁN CỦA TÔI
+        async function loadRecords() {
+            try {
+                const res = await fetch(`/api/medical-records/patient/${loggedInUserId}`);
+                const data = await res.json();
+                const tbody = document.getElementById('myRecordsTable');
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Bạn chưa có hồ sơ bệnh án nào.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = data.map(r => `
+                    <tr>
+                        <td class="fw-bold">${r.recordDate}</td>
+                        <td>${r.doctor ? 'BS. ' + r.doctor.fullName : '-'}</td>
+                        <td>${r.diagnosis}</td>
+                        <td>${r.prescription || 'Không có'}</td>
+                        <td>${r.doctorNotes || '-'}</td>
+                    </tr>
+                `).join('');
+            } catch (e) {}
+        }
+
+        // 6. LOAD DỊCH VỤ
+        async function loadServices() {
+            try {
+                const res = await fetch('/api/medical-services');
+                let data = await res.json();
+                if (data.content) data = data.content;
+                const tbody = document.getElementById('patientServicesTable');
+                const activeServices = data.filter(d => d.active);
+                if (activeServices.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-4">Phòng khám chưa cung cấp dịch vụ nào.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = activeServices.map(s => `
+                    <tr>
+                        <td class="fw-bold text-primary">${s.name}</td>
+                        <td>${s.description}</td>
+                        <td><span class="badge bg-success">${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(s.price)}</span></td>
+                    </tr>
+                `).join('');
+            } catch (e) {}
+        }
+
+        // INIT
+        loadFormData();
+        
+        // Khi bấm sang Tab
+        document.getElementById('v-pills-appointments-tab').addEventListener('shown.bs.tab', loadAppointments);
+        document.getElementById('v-pills-records-tab').addEventListener('shown.bs.tab', loadRecords);
+        document.getElementById('v-pills-services-tab').addEventListener('shown.bs.tab', loadServices);
+
+    </script>
+</body>
+</html>

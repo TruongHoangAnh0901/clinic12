@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bảng Điều Khiển Bác Sĩ | Phòng Khám Nhóm 12</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #11998e;
+            --secondary: #38ef7d;
+            --sidebar-bg: #1e293b;
+            --sidebar-hover: #334155;
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; background: #f8fafc; }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 260px;
+            min-height: 100vh;
+            background: var(--sidebar-bg);
+            position: fixed;
+            top: 0; left: 0;
+            z-index: 100;
+        }
+        .sidebar-brand {
+            padding: 20px 25px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+        .sidebar-brand span { color: var(--secondary); }
+        .sidebar-nav { padding: 15px 0; }
+        .nav-item-sidebar {
+            display: flex; align-items: center;
+            padding: 13px 25px; color: rgba(255,255,255,0.7);
+            text-decoration: none; transition: 0.2s;
+            cursor: pointer; border: none; background: none; width: 100%; text-align: left;
+        }
+        .nav-item-sidebar:hover, .nav-item-sidebar.active {
+            background: var(--sidebar-hover);
+            color: white;
+            border-left: 3px solid var(--secondary);
+        }
+        .nav-item-sidebar i { width: 25px; margin-right: 10px; }
+
+        /* MAIN CONTENT */
+        .main-content { margin-left: 260px; padding: 0; }
+
+        /* TOPBAR */
+        .topbar {
+            background: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .topbar h5 { margin: 0; font-weight: 700; color: #333; }
+
+        /* CARD */
+        .dashboard-card {
+            background: white; border-radius: 15px;
+            padding: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+            border: 1px solid #f1f5f9;
+        }
+        .stat-card {
+            border: none; border-radius: 15px;
+            padding: 25px; color: white;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        .table th { background: #f8fafc; font-weight: 600; font-size: 0.85rem; color: #64748b; }
+        
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-brand">
+        <i class="fa-solid fa-user-doctor me-2"></i>NHÓM 12 <span>DR</span>
+    </div>
+    <nav class="sidebar-nav">
+        <button class="nav-item-sidebar active" onclick="showSection('appointments')">
+            <i class="fa-solid fa-calendar-check"></i> Lịch Hẹn Hôm Nay
+        </button>
+        <button class="nav-item-sidebar" onclick="showSection('records')">
+            <i class="fa-solid fa-file-medical"></i> Hồ Sơ Đã Khám
+        </button>
+        <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;"></div>
+        <button class="nav-item-sidebar text-danger" onclick="logout()">
+            <i class="fa-solid fa-right-from-bracket"></i> Đăng Xuất
+        </button>
+    </nav>
+</div>
+
+<div class="main-content">
+    <div class="topbar">
+        <h5 id="pageTitle"><i class="fa-solid fa-calendar-check text-primary me-2"></i>Lịch Hẹn Hôm Nay</h5>
+        <div class="d-flex align-items-center">
+            <i class="fa-solid fa-user-doctor text-primary fs-4 me-2"></i>
+            <span class="fw-bold" id="doctorNameTopbar">BS. Name</span>
+            <span class="badge bg-success ms-2">BÁC SĨ</span>
+        </div>
+    </div>
+
+    <div class="container-fluid p-4">
+
+        <!-- LỊCH HẸN -->
+        <div id="section-appointments" class="content-section active">
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <div class="fw-bold mb-2">Tổng số lịch hẹn</div>
+                        <h2 class="fw-bolder" id="stat-total-appts">0</h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-card">
+                <h6 class="fw-bold mb-4">Danh sách Bệnh nhân Đợi Khám</h6>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Bệnh Nhân</th>
+                                <th>SĐT</th>
+                                <th>Ngày</th>
+                                <th>Giờ</th>
+                                <th>Dịch Vụ</th>
+                                <th>Lý Do</th>
+                                <th>Trạng Thái</th>
+                                <th>Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="doctorApptTableBody">
+                            <tr><td colspan="8" class="text-center py-4">Đang tải...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- HỒ SƠ ĐÃ KHÁM -->
+        <div id="section-records" class="content-section">
+            <div class="dashboard-card">
+                <h6 class="fw-bold mb-4">Danh Sách Bệnh Án Đã Lập</h6>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Bệnh Nhân</th>
+                                <th>Ngày Khám</th>
+                                <th>Chẩn Đoán</th>
+                                <th>Mã Lịch Hẹn</th>
+                            </tr>
+                        </thead>
+                        <tbody id="doctorRecordTableBody">
+                            <tr><td colspan="5" class="text-center py-4">Đang tải...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL LẬP BỆNH ÁN -->
+<div class="modal fade" id="createRecordModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header text-white" style="background: var(--primary);">
+                <h5 class="modal-title"><i class="fa-solid fa-file-medical me-2"></i>Lập Hồ Sơ Bệnh Án Mới</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    Đang khám cho bệnh nhân: <strong id="recordPatientName"></strong>
+                </div>
+                <!-- Hidden fields -->
+                <input type="hidden" id="recordApptId">
+                <input type="hidden" id="recordPatientUserId">
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Chẩn Đoán Bệnh <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="recordDiagnosis" rows="3" placeholder="Ghi nhận triệu chứng và kết luận bệnh..." required></textarea>
+                </div>
+                <div class="mb-3 border p-3 rounded bg-light">
+                    <label class="form-label fw-bold"><i class="fa-solid fa-pills text-primary"></i> Kê Đơn Thuốc Từ Kho</label>
+                    <div class="row g-2 mb-2">
+                        <div class="col-md-6">
+                            <select class="form-select" id="selectMedicine">
+                                <option value="">-- Chọn thuốc hiển thị theo kho --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="number" class="form-control" id="inputQuantity" placeholder="Số lượng" min="1">
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-primary w-100" onclick="addMedicineRow()"><i class="fa-solid fa-plus"></i> Kê thêm</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered bg-white">
+                            <thead class="table-light">
+                                <tr><th>Tên Thuốc</th><th>Liều Lượng Kê</th><th>Thao tác</th></tr>
+                            </thead>
+                            <tbody id="prescriptionTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Liều dùng & Dặn dò kèm theo (Bổ sung đơn thuốc)</label>
+                    <textarea class="form-control" id="recordPrescription" rows="2" placeholder="Ví dụ: Paracetamol uống sáng/tối..."></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Lời Dặn Dò</label>
+                    <textarea class="form-control" id="recordNotes" rows="2" placeholder="VD: Nhớ uống nhiều nước, kiêng đồ chua..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button class="btn btn-success" onclick="saveMedicalRecord()">Hoàn Tất Bệnh Án</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // ===== GUARD =====
+    const loggedInUser = localStorage.getItem("loggedInUser");
+    const loggedInUserId = localStorage.getItem("loggedInUserId");
+    const userRole = localStorage.getItem("userRole");
+
+    if (!loggedInUser || userRole !== "ROLE_DOCTOR") {
+        alert("Chỉ Bác sĩ mới có quyền truy cập trang này!");
+        window.location.href = "/login.html";
+    }
+
+    document.getElementById("doctorNameTopbar").textContent = loggedInUser;
+
+    // ===== NAVIGATION =====
+    function showSection(name) {
+        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-item-sidebar').forEach(n => n.classList.remove('active'));
+        document.getElementById('section-' + name).classList.add('active');
+        event.currentTarget.classList.add('active');
+
+        const titles = {
+            'appointments': '<i class="fa-solid fa-calendar-check text-primary me-2"></i>Lịch Hẹn Hôm Nay',
+            'records': '<i class="fa-solid fa-file-medical text-primary me-2"></i>Hồ Sơ Đã Khám'
+        };
+        document.getElementById('pageTitle').innerHTML = titles[name];
+
+        if (name === 'appointments') loadAppointments();
+        if (name === 'records') loadRecords();
+    }
+
+    // ===== LOGOUT =====
+    function logout() {
+        localStorage.clear();
+        window.location.href = "/login.html";
+    }
+
+    // ===== LOAD DATA =====
+    let currentAppts = [];
+
+    function badgeStatus(stt) {
+        if(stt === 'CHỜ DUYỆT') return '<span class="badge bg-warning text-dark">Chờ Duyệt</span>';
+        if(stt === 'ĐÃ XÁC NHẬN') return '<span class="badge bg-primary">Đã Xác Nhận</span>';
+        if(stt === 'HOÀN THÀNH') return '<span class="badge bg-success">Hoàn Thành</span>';
+        if(stt === 'ĐÃ HỦY') return '<span class="badge bg-secondary">Đã Hủy</span>';
+        return `<span class="badge bg-light text-dark">${stt}</span>`;
+    }
+
+    let globalMedicines = [];
+    let selectedMedicines = [];
+
+    function loadMedicinesForDoctor() {
+        fetch('/api/medicines')
+            .then(res => res.json())
+            .then(data => {
+                if (data.content) data = data.content;
+                // Chỉ lấy thuốc đang hoạt động và còn hàng
+                globalMedicines = data.filter(m => m.active && m.quantity > 0);
+                const select = document.getElementById('selectMedicine');
+                select.innerHTML = '<option value="">-- Chọn thuốc hiển thị theo kho --</option>';
+                globalMedicines.forEach(m => {
+                    select.innerHTML += `<option value="${m.id}">${m.name} (Tồn kho: ${m.quantity})</option>`;
+                });
+            });
+    }
+
+    function loadAppointments() {
+        fetch(`/api/appointments/doctor/${loggedInUserId}`)
+            .then(res => res.json())
+            .then(data => {
+                currentAppts = data;
+                document.getElementById('stat-total-appts').innerText = data.length;
+                const tbody = document.getElementById('doctorApptTableBody');
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Không có lịch hẹn nào được phân công.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.map((a, i) => `
+                    <tr>
+                        <td>${i+1}</td>
+                        <td class="fw-bold">${a.patientName}</td>
+                        <td>${a.patientPhone}</td>
+                        <td>${a.appointmentDate}</td>
+                        <td><span class="badge bg-light text-dark border">${a.appointmentTime}</span></td>
+                        <td>${a.medicalService ? `<span class="badge bg-info text-white">${a.medicalService.name}</span>` : '<span class="text-muted small">Khám thường</span>'}</td>
+                        <td>${a.reason || '-'}</td>
+                        <td>${badgeStatus(a.status)}</td>
+                        <td>
+                            ${(a.status === 'ĐÃ XÁC NHẬN' || a.status === 'CHỜ DUYỆT') ? 
+                            `<button class="btn btn-sm btn-primary" onclick='openRecordModal(${JSON.stringify(a)})'>
+                                <i class="fa-solid fa-stethoscope"></i> Khám & Lập Bệnh Án
+                            </button>` 
+                            : `<button class="btn btn-sm btn-outline-secondary" disabled>Đã xử lý</button>`}
+                        </td>
+                    </tr>
+                `).join('');
+            });
+    }
+
+    function loadRecords() {
+        fetch(`/api/medical-records/doctor/${loggedInUserId}`)
+            .then(res => res.json())
+            .then(data => {
+                const tbody = document.getElementById('doctorRecordTableBody');
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Chưa lập hồ sơ nào.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = data.map((r, i) => `
+                    <tr>
+                        <td>${i+1}</td>
+                        <td class="fw-bold">${r.patient ? r.patient.fullName : 'Khách vãng lai'}</td>
+                        <td>${r.recordDate}</td>
+                        <td class="text-truncate" style="max-width: 250px;">${r.diagnosis}</td>
+                        <td>#${r.appointmentId || '-'}</td>
+                    </tr>
+                `).join('');
+            });
+    }
+
+    // ===== BỆNH ÁN LOGIC =====
+    function openRecordModal(appt) {
+        document.getElementById('recordApptId').value = appt.id;
+        document.getElementById('recordPatientUserId').value = (appt.patientUser ? appt.patientUser.id : '');
+        document.getElementById('recordPatientName').innerText = appt.patientName;
+        
+        // Hiển thị dịch vụ nếu có
+        if (appt.medicalService) {
+            document.getElementById('recordPatientName').innerHTML += ` <span class="badge bg-info ms-2">Dịch vụ: ${appt.medicalService.name}</span>`;
+        }
+        
+        document.getElementById('recordDiagnosis').value = '';
+        document.getElementById('recordPrescription').value = '';
+        document.getElementById('recordNotes').value = '';
+        
+        // Reset bảng đơn thuốc
+        selectedMedicines = [];
+        renderPrescriptionTable();
+        document.getElementById('selectMedicine').value = '';
+        document.getElementById('inputQuantity').value = '';
+
+        new bootstrap.Modal(document.getElementById('createRecordModal')).show();
+    }
+
+    function addMedicineRow() {
+        const select = document.getElementById('selectMedicine');
+        const qtyBox = document.getElementById('inputQuantity');
+        const medId = parseInt(select.value);
+        const qty = parseInt(qtyBox.value);
+
+        if (!medId || isNaN(qty) || qty <= 0) {
+            alert('Vui lòng chọn thuốc và nhập số lượng hợp lệ!');
+            return;
+        }
+
+        const medEntry = globalMedicines.find(m => m.id === medId);
+        if (qty > medEntry.quantity) {
+            alert(`Lỗi: Trong kho chỉ còn ${medEntry.quantity} đơn vị thuốc này!`);
+            return;
+        }
+
+        // Kiểm tra xem đã thêm chưa, nếu có thì cộng dồn số lượng
+        const existingInfo = selectedMedicines.find(x => x.id === medId);
+        if (existingInfo) {
+            if (existingInfo.quantity + qty > medEntry.quantity) {
+                alert(`Không đủ kho để bổ sung. Tồn: ${medEntry.quantity}`);
+                return;
+            }
+            existingInfo.quantity += qty;
+        } else {
+            selectedMedicines.push({ id: medId, name: medEntry.name, quantity: qty });
+        }
+
+        select.value = '';
+        qtyBox.value = '';
+        renderPrescriptionTable();
+    }
+
+    function removeMedicineRow(medId) {
+        selectedMedicines = selectedMedicines.filter(m => m.id !== medId);
+        renderPrescriptionTable();
+    }
+
+    function renderPrescriptionTable() {
+        const tbody = document.getElementById('prescriptionTableBody');
+        if (selectedMedicines.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Chưa kê loại thuốc nào.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = selectedMedicines.map((m) => `
+            <tr>
+                <td class="fw-bold">${m.name}</td>
+                <td><span class="badge bg-secondary">${m.quantity} Viên/Lọ</span></td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-danger" onclick="removeMedicineRow(${m.id})">
+                        <i class="fa-solid fa-xmark"></i> Bỏ
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function saveMedicalRecord() {
+        const apptId = document.getElementById('recordApptId').value;
+        const pUserId = document.getElementById('recordPatientUserId').value;
+        const diag = document.getElementById('recordDiagnosis').value.trim();
+        const presc = document.getElementById('recordPrescription').value.trim();
+        const notes = document.getElementById('recordNotes').value.trim();
+
+        if (!diag) {
+            alert('Vui lòng nhập chẩn đoán!');
+            return;
+        }
+
+        // Tạo payload, nếu bệnh nhân ko có UserID (Khách vãng lai) thì lưu null, tuy nhiên 
+        // entity Patient hiện đang non-null (patient_id nullable=false). 
+        // Trong trường hợp này logic của Backend sẽ báo lỗi nếu pUserId null.
+        // Tạm thời nếu ko có tài khoản, mình có thể phải tạo 1 user khách hoặc báo lỗi (mặc định app này yêu cầu bệnh nhân tạo TK).
+        if (!pUserId) {
+            alert('Lỗi: Bệnh nhân này không có tài khoản trên hệ thống. Không thể lập bệnh án liên kết!');
+            return;
+        }
+
+        let finalPrescriptionString = "";
+        if (selectedMedicines.length > 0) {
+            finalPrescriptionString = "💊 THUỐC KÊ ĐƠN TỪ KHO:\n";
+            selectedMedicines.forEach((m, idx) => {
+                finalPrescriptionString += `${idx + 1}. ${m.name} (SL: ${m.quantity})\n`;
+            });
+            finalPrescriptionString += "\n📋 ĐỐI CHIẾU LỜI DẶN:\n";
+        }
+        finalPrescriptionString += presc;
+
+        const payload = {
+            doctor: { id: loggedInUserId },
+            patient: { id: pUserId },
+            appointmentId: apptId,
+            diagnosis: diag,
+            prescription: finalPrescriptionString.trim(),
+            doctorNotes: notes,
+            recordDate: new Date().toISOString().split('T')[0], // yyyy-mm-dd
+            prescribedMedicines: selectedMedicines.map(m => ({
+                id: m.id,
+                quantity: m.quantity
+            }))
+        };
+
+        fetch('/api/medical-records', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(res => {
+            if (res.ok) {
+                // Đổi trạng thái lịch hẹn sang HOÀN THÀNH
+                fetch(`/api/appointments/${apptId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'HOÀN THÀNH' })
+                }).then(() => {
+                    bootstrap.Modal.getInstance(document.getElementById('createRecordModal')).hide();
+                    loadAppointments(); // Tải lại để xóa nút 'Khám'
+                    alert('Lập bệnh án thành công!');
+                });
+            } else {
+                alert('Có lỗi khi tạo bệnh án!');
+            }
+        });
+    }
+
+    // INIT
+    loadAppointments();
+    loadMedicinesForDoctor();
+</script>
+</body>
+</html>

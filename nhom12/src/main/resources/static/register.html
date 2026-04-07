@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Ký - Phòng Khám Nhóm 12</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #005bea;
+            --secondary: #00c6fb;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e0eafc, #cfdef3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            position: relative;
+            padding: 30px 15px;
+        }
+
+        .back-link {
+            position: fixed;
+            top: 20px;
+            left: 25px;
+            transition: 0.3s;
+            font-size: 1rem;
+            z-index: 10;
+        }
+        .back-link:hover { color: var(--primary) !important; transform: translateX(-4px); }
+
+        /* CARD */
+        .register-card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,91,234,0.15);
+            width: 100%;
+            max-width: 580px;
+            overflow: hidden;
+        }
+        .register-header {
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            color: white;
+            padding: 32px 28px;
+            text-align: center;
+        }
+        .register-header .icon-circle {
+            width: 70px; height: 70px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-bottom: 12px;
+        }
+
+        /* INPUT */
+        .form-label { font-weight: 600; font-size: 0.88rem; color: #555; margin-bottom: 6px; }
+        .input-group-text {
+            background: #f0f4ff;
+            border: 1.5px solid #d0d9f0;
+            border-right: none;
+            color: var(--primary);
+        }
+        .form-control {
+            border: 1.5px solid #d0d9f0;
+            background: #f0f4ff;
+            transition: 0.2s;
+        }
+        .form-control:focus {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(0,91,234,0.12);
+        }
+        .form-control.is-valid  { border-color: #28a745 !important; background: #f0fff4 !important; }
+        .form-control.is-invalid{ border-color: #dc3545 !important; background: #fff5f5 !important; }
+
+        /* Nút toggle mật khẩu */
+        .toggle-password {
+            border: 1.5px solid #d0d9f0;
+            border-left: none;
+            background: #f0f4ff;
+            color: #999;
+            padding: 0 14px;
+            cursor: pointer;
+            border-radius: 0 8px 8px 0;
+            transition: 0.2s;
+        }
+        .toggle-password:hover { color: var(--primary); background: #e0eaff; }
+
+        /* THANH ĐỘ MẠNH */
+        .strength-bars {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+        }
+        .strength-segment {
+            flex: 1;
+            height: 5px;
+            border-radius: 5px;
+            background: #e0e0e0;
+            transition: background 0.35s ease;
+        }
+
+        /* CHECKLIST YÊU CẦU */
+        .req-list { list-style: none; padding: 0; margin: 10px 0 0; }
+        .req-list li {
+            font-size: 0.8rem;
+            color: #aaa;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            margin-bottom: 4px;
+            transition: color 0.25s;
+        }
+        .req-list li .req-icon { font-size: 0.75rem; width: 16px; text-align: center; }
+        .req-list li.ok  { color: #28a745; }
+        .req-list li.bad { color: #dc3545; }
+
+        /* FEEDBACK KHỚP */
+        .match-msg {
+            font-size: 0.8rem;
+            margin-top: 5px;
+            font-weight: 600;
+            min-height: 18px;
+        }
+
+        /* FIELD FEEDBACK */
+        .field-feedback {
+            font-size: 0.78rem;
+            margin-top: 4px;
+            min-height: 16px;
+            font-weight: 600;
+        }
+        .field-feedback.ok    { color: #28a745; }
+        .field-feedback.error { color: #dc3545; }
+
+        /* SUBMIT */
+        .btn-register {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border: none;
+            color: white;
+            font-weight: 700;
+            padding: 14px;
+            border-radius: 50px;
+            font-size: 1rem;
+            letter-spacing: 0.5px;
+            transition: 0.3s;
+        }
+        .btn-register:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,91,234,0.35);
+            color: white;
+        }
+        .btn-register:disabled { opacity: 0.7; }
+
+        /* ALERT ĐẶC BIỆT CHO LỖI TRÙNG */
+        .alert-duplicate {
+            background: #fff3cd;
+            border: 1.5px solid #ffc107;
+            color: #856404;
+            border-radius: 10px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 16px;
+        }
+        .alert-duplicate .dup-icon { font-size: 1.2rem; margin-top: 2px; }
+    </style>
+</head>
+<body>
+
+<a href="/" class="text-decoration-none text-muted fw-bold back-link">
+    <i class="fa-solid fa-arrow-left me-1"></i> Quay lại
+</a>
+
+<div class="register-card">
+    <!-- HEADER -->
+    <div class="register-header">
+        <div class="icon-circle"><i class="fa-solid fa-user-plus"></i></div>
+        <h4 class="fw-bold mb-1">Tạo Tài Khoản Mới</h4>
+        <p class="mb-0 opacity-75" style="font-size:0.9rem">Phòng Khám Nhóm 12 — Đăng ký miễn phí</p>
+    </div>
+
+    <!-- BODY -->
+    <div class="card-body p-4 p-md-5 bg-white">
+        <div id="messageBox" class="alert d-none mb-4" role="alert"></div>
+
+        <form id="registerForm" novalidate>
+
+            <!-- Họ tên -->
+            <div class="mb-3">
+                <label class="form-label">Họ và Tên <span class="text-danger">*</span></label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fa-solid fa-id-card"></i></span>
+                    <input type="text" class="form-control" id="fullName"
+                           placeholder="Nhập họ và tên đầy đủ..." required>
+                </div>
+            </div>
+
+            <!-- Tên đăng nhập -->
+            <div class="mb-3">
+                <label class="form-label">Tên đăng nhập <span class="text-danger">*</span></label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
+                    <input type="text" class="form-control" id="username"
+                           placeholder="Tên đăng nhập (không dấu, không khoảng cách)..." required>
+                </div>
+                <div class="field-feedback" id="usernameFeedback"></div>
+            </div>
+
+            <!-- Email -->
+            <div class="mb-3">
+                <label class="form-label">Email <span class="text-danger">*</span></label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fa-solid fa-envelope"></i></span>
+                    <input type="email" class="form-control" id="email"
+                           placeholder="example@email.com..." required>
+                </div>
+                <div class="field-feedback" id="emailFeedback"></div>
+            </div>
+
+            <!-- Số điện thoại -->
+            <div class="mb-3">
+                <label class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fa-solid fa-phone"></i></span>
+                    <input type="text" class="form-control" id="phone"
+                           placeholder="VD: 0901234567..." required>
+                </div>
+                <div class="field-feedback" id="phoneFeedback"></div>
+            </div>
+
+            <!-- Mật khẩu -->
+            <div class="mb-3">
+                <label class="form-label">Mật khẩu <span class="text-danger">*</span></label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fa-solid fa-lock"></i></span>
+                    <input type="password" class="form-control" id="password"
+                           placeholder="Tạo mật khẩu..." required style="border-right:none;">
+                    <button type="button" class="toggle-password" id="toggleBtn1"
+                            onclick="togglePwd('password','eyeIcon1')" title="Ẩn/hiện mật khẩu">
+                        <i class="fa-solid fa-eye" id="eyeIcon1"></i>
+                    </button>
+                </div>
+
+                <!-- Thanh độ mạnh -->
+                <div class="strength-bars" id="strengthBars">
+                    <div class="strength-segment" id="seg1"></div>
+                    <div class="strength-segment" id="seg2"></div>
+                    <div class="strength-segment" id="seg3"></div>
+                    <div class="strength-segment" id="seg4"></div>
+                </div>
+                <div id="strengthLabel" style="font-size:0.78rem; font-weight:600; margin-top:4px; color:#bbb;">
+                    Chưa nhập mật khẩu
+                </div>
+
+                <!-- Checklist yêu cầu -->
+                <ul class="req-list" id="reqList">
+                    <li id="req-len"><span class="req-icon"><i class="fa-solid fa-circle-xmark"></i></span> Ít nhất 8 ký tự</li>
+                    <li id="req-lower"><span class="req-icon"><i class="fa-solid fa-circle-xmark"></i></span> Ít nhất 1 chữ thường (a-z)</li>
+                    <li id="req-upper"><span class="req-icon"><i class="fa-solid fa-circle-xmark"></i></span> Ít nhất 1 chữ hoa (A-Z)</li>
+                    <li id="req-num"><span class="req-icon"><i class="fa-solid fa-circle-xmark"></i></span> Ít nhất 1 chữ số (0-9)</li>
+                    <li id="req-special"><span class="req-icon"><i class="fa-solid fa-circle-xmark"></i></span> Ít nhất 1 ký tự đặc biệt (!@#$%...)</li>
+                </ul>
+            </div>
+
+            <!-- Nhập lại mật khẩu -->
+            <div class="mb-4">
+                <label class="form-label">Nhập lại mật khẩu <span class="text-danger">*</span></label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fa-solid fa-lock-open"></i></span>
+                    <input type="password" class="form-control" id="confirmPassword"
+                           placeholder="Nhập lại mật khẩu..." required style="border-right:none;">
+                    <button type="button" class="toggle-password"
+                            onclick="togglePwd('confirmPassword','eyeIcon2')" title="Ẩn/hiện mật khẩu">
+                        <i class="fa-solid fa-eye" id="eyeIcon2"></i>
+                    </button>
+                </div>
+                <div class="match-msg" id="matchMsg"></div>
+            </div>
+
+            <button type="submit" class="btn btn-register w-100" id="submitBtn">
+                <i class="fa-solid fa-user-check me-2"></i>TẠO TÀI KHOẢN
+            </button>
+        </form>
+
+        <div class="text-center mt-4 pt-3 border-top">
+            <p class="mb-0 text-muted" style="font-size:0.9rem">
+                Đã có tài khoản?
+                <a href="login.html" class="fw-bold text-decoration-none text-primary">Đăng nhập ngay</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    if (localStorage.getItem("loggedInUser")) { window.location.href = "/"; }
+
+    // =============================================
+    // ẨN / HIỆN MẬT KHẨU
+    // =============================================
+    function togglePwd(inputId, iconId) {
+        const inp  = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        inp.type = (inp.type === 'password') ? 'text' : 'password';
+        icon.classList.toggle('fa-eye');
+        icon.classList.toggle('fa-eye-slash');
+    }
+
+    // =============================================
+    // KIỂM TRA YÊU CẦU MẬT KHẨU & ĐỘ MẠNH
+    // =============================================
+    const rules = [
+        { id: 'req-len',     test: v => v.length >= 8 },
+        { id: 'req-lower',   test: v => /[a-z]/.test(v) },
+        { id: 'req-upper',   test: v => /[A-Z]/.test(v) },
+        { id: 'req-num',     test: v => /[0-9]/.test(v) },
+        { id: 'req-special', test: v => /[^a-zA-Z0-9]/.test(v) },
+    ];
+
+    const levelConfig = [
+        { color: '#e74c3c', label: '🔴 Rất yếu',   segs: 1 },
+        { color: '#e67e22', label: '🟠 Yếu',        segs: 2 },
+        { color: '#f1c40f', label: '🟡 Trung bình', segs: 3 },
+        { color: '#28a745', label: '🟢 Mạnh',       segs: 4 },
+        { color: '#1a7a3f', label: '💪 Rất mạnh',  segs: 4 },
+    ];
+
+    const segments = ['seg1','seg2','seg3','seg4'];
+
+    document.getElementById('password').addEventListener('input', function () {
+        const val  = this.value;
+        let passed = 0;
+
+        rules.forEach(r => {
+            const ok = val.length > 0 && r.test(val);
+            const el = document.getElementById(r.id);
+            el.classList.toggle('ok',  ok);
+            el.classList.toggle('bad', val.length > 0 && !ok);
+            el.querySelector('.req-icon').innerHTML = ok
+                ? '<i class="fa-solid fa-circle-check"></i>'
+                : '<i class="fa-solid fa-circle-xmark"></i>';
+            if (ok) passed++;
+        });
+
+        // Reset màu thanh
+        segments.forEach(s => { document.getElementById(s).style.background = '#e0e0e0'; });
+
+        const lbl = document.getElementById('strengthLabel');
+
+        if (val.length === 0) {
+            lbl.textContent = 'Chưa nhập mật khẩu';
+            lbl.style.color = '#bbb';
+            rules.forEach(r => {
+                const el = document.getElementById(r.id);
+                el.classList.remove('ok','bad');
+                el.querySelector('.req-icon').innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
+            });
+            return;
+        }
+
+        const cfg = levelConfig[passed - 1] || levelConfig[0];
+        for (let i = 0; i < cfg.segs; i++) {
+            document.getElementById(segments[i]).style.background = cfg.color;
+        }
+        lbl.textContent = `Độ mạnh: ${cfg.label}`;
+        lbl.style.color = cfg.color;
+
+        checkMatch();
+    });
+
+    // =============================================
+    // KIỂM TRA NHẬP LẠI MẬT KHẨU
+    // =============================================
+    function checkMatch() {
+        const pass    = document.getElementById('password').value;
+        const confirm = document.getElementById('confirmPassword').value;
+        const msg     = document.getElementById('matchMsg');
+        const inp     = document.getElementById('confirmPassword');
+
+        if (confirm.length === 0) {
+            msg.innerHTML = '';
+            inp.classList.remove('is-valid','is-invalid');
+            return;
+        }
+
+        if (pass === confirm) {
+            msg.innerHTML = '<i class="fa-solid fa-circle-check text-success me-1"></i><span class="text-success">Mật khẩu khớp!</span>';
+            inp.classList.add('is-valid');
+            inp.classList.remove('is-invalid');
+        } else {
+            msg.innerHTML = '<i class="fa-solid fa-circle-xmark text-danger me-1"></i><span class="text-danger">Mật khẩu chưa khớp!</span>';
+            inp.classList.add('is-invalid');
+            inp.classList.remove('is-valid');
+        }
+    }
+
+    document.getElementById('confirmPassword').addEventListener('input', checkMatch);
+
+    // =============================================
+    // HELPER: Hiệu ứng shake cho ô nhập bị lỗi
+    // =============================================
+    function shakeField(id) {
+        const el = document.getElementById(id);
+        el.style.animation = 'none';
+        el.offsetHeight; // reflow
+        el.style.animation = 'shake 0.4s ease';
+    }
+
+    // =============================================
+    // HELPER: Hiển thị lỗi cụ thể theo trường
+    // =============================================
+    function showFieldError(feedbackId, inputId, msg) {
+        const fb = document.getElementById(feedbackId);
+        const inp = document.getElementById(inputId);
+        fb.textContent = '⚠ ' + msg;
+        fb.className = 'field-feedback error';
+        inp.classList.add('is-invalid');
+        inp.classList.remove('is-valid');
+        inp.focus();
+        return false;
+    }
+
+    function clearFieldFeedback(feedbackId, inputId) {
+        const fb = document.getElementById(feedbackId);
+        const inp = document.getElementById(inputId);
+        fb.textContent = '';
+        fb.className = 'field-feedback';
+        inp.classList.remove('is-invalid');
+    }
+
+    // =============================================
+    // SUBMIT
+    // =============================================
+    document.getElementById('registerForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const fullName = document.getElementById('fullName').value.trim();
+        const username = document.getElementById('username').value.trim();
+        const email    = document.getElementById('email').value.trim();
+        const phone    = document.getElementById('phone').value.trim();
+        const pass     = document.getElementById('password').value;
+        const confirm  = document.getElementById('confirmPassword').value;
+        const msgBox   = document.getElementById('messageBox');
+
+        // Reset tất cả feedback
+        msgBox.className = 'alert d-none mb-4';
+        ['username','email','phone'].forEach(id => clearFieldFeedback(id + 'Feedback', id));
+
+        // --- Validate client-side cơ bản ---
+        if (!fullName) {
+            msgBox.className = 'alert alert-warning mb-4';
+            msgBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-2"></i>Vui lòng nhập họ và tên!';
+            document.getElementById('fullName').focus();
+            return;
+        }
+
+        if (!username) {
+            return showFieldError('usernameFeedback', 'username', 'Tên đăng nhập không được để trống!');
+        }
+
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return showFieldError('emailFeedback', 'email', 'Email không hợp lệ!');
+        }
+
+        if (!phone || !/^(0[3-9])\d{8}$/.test(phone)) {
+            return showFieldError('phoneFeedback', 'phone', 'Số điện thoại không hợp lệ (VD: 0901234567)!');
+        }
+
+        const allPassed = rules.every(r => r.test(pass));
+        if (!allPassed) {
+            msgBox.className = 'alert alert-danger mb-4';
+            msgBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation me-2"></i>Mật khẩu chưa đủ điều kiện! Vui lòng kiểm tra lại các yêu cầu bên dưới ô mật khẩu.';
+            document.getElementById('password').focus();
+            return;
+        }
+
+        if (pass !== confirm) {
+            msgBox.className = 'alert alert-danger mb-4';
+            msgBox.innerHTML = '<i class="fa-solid fa-circle-xmark me-2"></i>Mật khẩu nhập lại không khớp!';
+            document.getElementById('confirmPassword').focus();
+            return;
+        }
+
+        // --- Gọi API ---
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i>Đang xử lý...';
+
+        const body = { username, email, password: pass, fullName, phone };
+
+        fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        })
+        .then(async res => {
+            const text = await res.text();
+
+            if (res.ok) {
+                // Thành công
+                msgBox.className = 'alert alert-success mb-4';
+                msgBox.innerHTML = '<i class="fa-solid fa-circle-check me-2"></i>Đăng ký thành công! Đang chuyển đến trang đăng nhập...';
+                this.reset();
+                document.getElementById('strengthLabel').textContent = 'Chưa nhập mật khẩu';
+                document.getElementById('strengthLabel').style.color = '#bbb';
+                segments.forEach(s => document.getElementById(s).style.background = '#e0e0e0');
+                document.getElementById('matchMsg').innerHTML = '';
+                setTimeout(() => { window.location.href = 'login.html'; }, 1800);
+                return;
+            }
+
+            // Phân tích lỗi từ server để highlight đúng trường
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-user-check me-2"></i>TẠO TÀI KHOẢN';
+
+            if (text.includes('tên đăng nhập') || text.includes('username')) {
+                showFieldError('usernameFeedback', 'username', 'Tên đăng nhập này đã được sử dụng!');
+                showDuplicateAlert('⚠ Tên đăng nhập đã tồn tại trong hệ thống. Vui lòng chọn tên khác.', msgBox);
+            } else if (text.includes('email') || text.includes('Email')) {
+                showFieldError('emailFeedback', 'email', 'Email này đã được đăng ký!');
+                showDuplicateAlert('⚠ Địa chỉ email đã được sử dụng để đăng ký tài khoản khác. Vui lòng dùng email khác.', msgBox);
+            } else if (text.includes('điện thoại') || text.includes('phone')) {
+                showFieldError('phoneFeedback', 'phone', 'Số điện thoại này đã được đăng ký!');
+                showDuplicateAlert('⚠ Số điện thoại đã được liên kết với tài khoản khác. Vui lòng dùng số khác.', msgBox);
+            } else {
+                msgBox.className = 'alert alert-danger mb-4';
+                msgBox.innerHTML = '<i class="fa-solid fa-circle-xmark me-2"></i>' + text;
+            }
+        })
+        .catch(() => {
+            msgBox.className = 'alert alert-danger mb-4';
+            msgBox.innerHTML = '<i class="fa-solid fa-plug-circle-xmark me-2"></i>Không thể kết nối đến máy chủ!';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fa-solid fa-user-check me-2"></i>TẠO TÀI KHOẢN';
+        });
+    });
+
+    // HIỂN THỊ THÔNG BÁO TRÙNG DẶC BIỆT
+    function showDuplicateAlert(message, msgBox) {
+        msgBox.className = 'alert mb-4';
+        msgBox.innerHTML = `
+            <div class="alert-duplicate">
+                <span class="dup-icon">⚠️</span>
+                <div>
+                    <strong>Đăng ký không thành công!</strong><br>
+                    <span style="font-size:0.9rem">${message}</span>
+                </div>
+            </div>`;
+    }
+</script>
+
+<style>
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        20%       { transform: translateX(-8px); }
+        40%       { transform: translateX(8px); }
+        60%       { transform: translateX(-5px); }
+        80%       { transform: translateX(5px); }
+    }
+</style>
+</body>
+</html>
