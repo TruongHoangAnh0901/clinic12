@@ -13,6 +13,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import jakarta.persistence.criteria.Predicate;
+import java.util.ArrayList;
 @RestController
 @RequestMapping("/api/medical-services")
 public class MedicalServiceController {
@@ -24,16 +27,35 @@ public class MedicalServiceController {
     @GetMapping
     public Page<MedicalService> getAllServices(
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Boolean isActive,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return serviceRepository.findAll(pageable);
-        } else {
-            return serviceRepository.findByNameContainingIgnoreCase(keyword, pageable);
-        }
+
+        Specification<MedicalService> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                predicates.add(cb.like(cb.lower(root.get("name")), "%" + keyword.toLowerCase() + "%"));
+            }
+            if (isActive != null) {
+                predicates.add(cb.equal(root.get("isActive"), isActive));
+            }
+            if (minPrice != null) {
+                predicates.add(cb.ge(root.get("price"), minPrice));
+            }
+            if (maxPrice != null) {
+                predicates.add(cb.le(root.get("price"), maxPrice));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        return serviceRepository.findAll(spec, pageable);
     }
 
     // 2. CREATE (Thêm dịch vụ mới)

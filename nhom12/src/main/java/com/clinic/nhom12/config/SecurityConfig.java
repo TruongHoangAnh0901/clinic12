@@ -55,7 +55,7 @@ public class SecurityConfig {
                 ).permitAll()
 
                 // Cho phép API đăng nhập, upload và các API danh mục/nghiệp vụ (Tạm thời mở vì Frontend dùng Sessionless LocalStorage)
-                .requestMatchers("/api/auth/**", "/api/upload").permitAll()
+                .requestMatchers("/api/auth/**", "/api/upload", "/api/chat").permitAll()
                 .requestMatchers(HttpMethod.GET, 
                     "/api/medicines", "/api/medicines/**", 
                     "/api/medical-services", "/api/medical-services/**", 

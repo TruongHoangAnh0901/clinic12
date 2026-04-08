@@ -13,6 +13,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import jakarta.persistence.criteria.Predicate;
+import java.time.LocalDate;
+import java.util.ArrayList;
 @RestController
 @RequestMapping("/api/medicines")
 public class MedicineController {
@@ -20,20 +24,59 @@ public class MedicineController {
     @Autowired
     private MedicineRepository medicineRepository;
 
-    // 1. Lấy danh sách toàn bộ thuốc (Có tìm kiếm, phân trang)
+    // 1. Lấy danh sách toàn bộ thuốc (Có tìm kiếm, phân trang và lọc nâng cao)
     @GetMapping
     public Page<Medicine> getAllMedicines(
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Boolean isActive,
+            @RequestParam(required = false) String alertType,
+            @RequestParam(required = false) Double minPrice,
+            @RequestParam(required = false) Double maxPrice,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy) {
 
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy));
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return medicineRepository.findAll(pageable);
-        } else {
-            return medicineRepository.findByNameContainingIgnoreCase(keyword, pageable);
-        }
+
+        Specification<Medicine> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (keyword != null && !keyword.trim().isEmpty()) {
+                predicates.add(cb.or(
+                        cb.like(cb.lower(root.get("name")), "%" + keyword.toLowerCase() + "%"),
+                        cb.like(cb.lower(root.get("batchNumber")), "%" + keyword.toLowerCase() + "%")
+                ));
+            }
+            if (isActive != null) {
+                predicates.add(cb.equal(root.get("isActive"), isActive));
+            }
+            if (minPrice != null) {
+                predicates.add(cb.ge(root.get("price"), minPrice));
+            }
+            if (maxPrice != null) {
+                predicates.add(cb.le(root.get("price"), maxPrice));
+            }
+            
+            // alertType: EXPIRING_SOON (<30 ngày), EXPIRED, LOW_STOCK (<10)
+            if (alertType != null) {
+                LocalDate today = LocalDate.now();
+                switch (alertType) {
+                    case "EXPIRED":
+                        predicates.add(cb.lessThan(root.get("expirationDate"), today));
+                        break;
+                    case "EXPIRING_SOON":
+                        predicates.add(cb.between(root.get("expirationDate"), today, today.plusDays(30)));
+                        break;
+                    case "LOW_STOCK":
+                        predicates.add(cb.lessThan(root.get("quantity"), 10));
+                        break;
+                }
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        return medicineRepository.findAll(spec, pageable);
     }
 
     // 2. Thêm thuốc mới vào kho

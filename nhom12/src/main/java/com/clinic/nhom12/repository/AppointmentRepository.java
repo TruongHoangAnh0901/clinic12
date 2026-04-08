@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
+public interface AppointmentRepository extends JpaRepository<Appointment, Long>, org.springframework.data.jpa.repository.JpaSpecificationExecutor<Appointment> {
     // Tìm lịch hẹn theo tài khoản bệnh nhân
     List<Appointment> findByPatientUserId(Long patientUserId);
 

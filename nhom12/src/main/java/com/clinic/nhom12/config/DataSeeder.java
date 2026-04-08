@@ -1,8 +1,12 @@
 package com.clinic.nhom12.config;
 
+import com.clinic.nhom12.entity.MedicalService;
+import com.clinic.nhom12.entity.Medicine;
 import com.clinic.nhom12.entity.Role;
 import com.clinic.nhom12.entity.Specialty;
 import com.clinic.nhom12.entity.User;
+import com.clinic.nhom12.repository.MedicalServiceRepository;
+import com.clinic.nhom12.repository.MedicineRepository;
 import com.clinic.nhom12.repository.RoleRepository;
 import com.clinic.nhom12.repository.SpecialtyRepository;
 import com.clinic.nhom12.repository.UserRepository;
@@ -11,6 +15,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 
@@ -25,6 +31,12 @@ public class DataSeeder implements CommandLineRunner {
 
     @Autowired
     private SpecialtyRepository specialtyRepository;
+
+    @Autowired
+    private MedicineRepository medicineRepository;
+
+    @Autowired
+    private MedicalServiceRepository medicalServiceRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder; // ✅ Inject BCrypt để hash mật khẩu mặc định
@@ -113,6 +125,28 @@ public class DataSeeder implements CommandLineRunner {
 
             userRepository.save(admin);
             System.out.println("Đã khởi tạo tài khoản Admin mặc định!");
+        }
+
+        // 5. Khởi tạo Thuốc mẫu (nếu chưa có)
+        if (medicineRepository.count() == 0) {
+            medicineRepository.saveAll(Arrays.asList(
+                    new Medicine(null, "Paracetamol 500mg", "L01-2025", 100, LocalDate.of(2025, 12, 31), 5000.0, "/images/thuoc/paracetamol.jpg", true),
+                    new Medicine(null, "Amoxicillin 500mg", "L02-2026", 50, LocalDate.of(2026, 6, 30), 12000.0, "/images/thuoc/amoxicillin.jpg", true),
+                    new Medicine(null, "Vitamin C 1000mg", "L03-2025", 200, LocalDate.of(2025, 10, 15), 3000.0, "/images/thuoc/vitaminc.jpg", true),
+                    new Medicine(null, "Ibuprofen 400mg", "L04-2026", 80, LocalDate.of(2026, 2, 28), 8000.0, "/images/thuoc/ibuprofen.jpg", true)
+            ));
+            System.out.println("Đã tạo dữ liệu Thuốc mẫu.");
+        }
+
+        // 6. Khởi tạo Dịch vụ khám bệnh mẫu (nếu chưa có)
+        if (medicalServiceRepository.count() == 0) {
+            medicalServiceRepository.saveAll(Arrays.asList(
+                    new MedicalService(null, "Khám tổng quát", "Khám lâm sàng toàn diện, đo huyết áp, nhịp tim", 150000.0, "/images/dichvu/kham-tong-quat.jpg", true),
+                    new MedicalService(null, "Siêu âm 4D", "Siêu âm thai nhi 4D sắc nét", 300000.0, "/images/dichvu/sieu-am-4d.jpg", true),
+                    new MedicalService(null, "Xét nghiệm máu cơ bản", "Bao gồm công thức máu, đường huyết, mỡ máu", 200000.0, "/images/dichvu/xet-nghiem-mau.jpg", true),
+                    new MedicalService(null, "Khám chuyên khoa Tim Mạch", "Điện tâm đồ, khám lâm sàng với bác sĩ chuyên khoa", 250000.0, "/images/dichvu/tim-mach.jpg", true)
+            ));
+            System.out.println("Đã tạo dữ liệu Dịch vụ y tế mẫu.");
         }
     }
 }

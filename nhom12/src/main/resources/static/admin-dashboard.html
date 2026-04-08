@@ -301,6 +301,31 @@
                     <h6 class="fw-bold mb-0"><i class="fa-solid fa-pills text-warning me-2"></i>Danh Sách Thuốc</h6>
                     <button class="btn btn-primary btn-sm" onclick="openMedicineModal()"><i class="fa-solid fa-plus me-1"></i>Thêm Thuốc Mới</button>
                 </div>
+                
+                <!-- Thanh công cụ tìm kiếm và lọc thuốc nâng cao -->
+                <div class="row mb-3 gx-2">
+                    <div class="col-md-3">
+                        <input type="text" class="form-control form-control-sm" id="medFilterKeyword" placeholder="Tìm tên hoặc số lô...">
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-select form-select-sm border-warning" id="medFilterAlert">
+                            <option value="">Kho: Bình thường (Tất cả)</option>
+                            <option value="EXPIRING_SOON">⚠️ Cảnh báo Sắp hết hạn (<30 ngày)</option>
+                            <option value="EXPIRED">❌ Cảnh báo Đã hết hạn</option>
+                            <option value="LOW_STOCK">📉 Cảnh báo Tồn kho thấp (<10)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select form-select-sm" id="medFilterActive">
+                            <option value="">Trạng thái: Tất cả</option>
+                            <option value="true">Đang bán</option>
+                            <option value="false">Ngừng bán</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-dark btn-sm w-100" onclick="loadMedicines()"><i class="fa-solid fa-filter me-1"></i>Lọc Data</button>
+                    </div>
+                </div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead><tr>
@@ -1050,7 +1075,18 @@
     }
 
     function loadMedicines() {
-        fetch('/api/medicines').then(r => r.json()).then(data => {
+        const kw = document.getElementById('medFilterKeyword') ? document.getElementById('medFilterKeyword').value : '';
+        const alertType = document.getElementById('medFilterAlert') ? document.getElementById('medFilterAlert').value : '';
+        const active = document.getElementById('medFilterActive') ? document.getElementById('medFilterActive').value : '';
+        
+        let url = '/api/medicines';
+        const params = new URLSearchParams();
+        if(kw) params.append('keyword', kw);
+        if(alertType) params.append('alertType', alertType);
+        if(active) params.append('isActive', active);
+        if([...params].length > 0) url += '?' + params.toString();
+
+        fetch(url).then(r => r.json()).then(data => {
             if (data.content) data = data.content;
             const tbody = document.getElementById('medicineTableBody');
             if(data.length === 0) {

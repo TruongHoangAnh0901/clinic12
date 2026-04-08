@@ -103,6 +103,96 @@
             align-items: center; justify-content: center; transition: 0.3s; margin-right: 10px; text-decoration: none;
         }
         .social-icon:hover { background: var(--primary); color: white; transform: translateY(-3px); }
+
+        /* --- 6. CHATBOT WIDGET --- */
+        #chatbot-trigger {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 5px 15px rgba(0,91,234,0.4);
+            cursor: pointer;
+            z-index: 9999;
+            transition: 0.3s;
+        }
+        #chatbot-trigger:hover { transform: scale(1.1); }
+
+        #chatbot-window {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            display: none;
+            flex-direction: column;
+            z-index: 9999;
+            overflow: hidden;
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp { from {opacity: 0; transform: translateY(20px);} to {opacity: 1; transform: translateY(0);} }
+        
+        .chat-header {
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+        .chat-body {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        .chat-footer {
+            padding: 10px 15px;
+            border-top: 1px solid #eee;
+            background: white;
+            display: flex;
+        }
+        .chat-input {
+            width: 100%;
+            border: none;
+            outline: none;
+            padding: 10px;
+            border-radius: 20px;
+            background: #f1f3f5;
+        }
+        .chat-message {
+            max-width: 80%;
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        .msg-bot {
+            background: white;
+            color: var(--dark-text);
+            border: 1px solid #eee;
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+        }
+        .msg-user {
+            background: var(--primary);
+            color: white;
+            align-self: flex-end;
+            margin-left: auto;
+            border-bottom-right-radius: 2px;
+        }
     </style>
 </head>
 <body>
@@ -131,7 +221,6 @@
                     <li class="nav-item"><a class="nav-link" href="/">Trang Chủ</a></li>
                     <li class="nav-item"><a class="nav-link" href="#services">Dịch Vụ</a></li>
                     <li class="nav-item"><a class="nav-link" href="#doctors">Đội Ngũ Bác Sĩ</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Tin Tức Y Tế</a></li>
                 </ul>
                 <div class="d-flex" id="authSection">
                     <a href="login.html" class="btn btn-outline-primary me-2 px-4 rounded-pill">Đăng Nhập</a>
@@ -244,6 +333,26 @@
             </div>
         </div>
     </footer>
+
+    <!-- CHATBOT UI -->
+    <div id="chatbot-trigger" onclick="toggleChat()">
+        <i class="fa-solid fa-messages"></i><i class="fa-solid fa-robot"></i>
+    </div>
+    <div id="chatbot-window">
+        <div class="chat-header">
+            <span><i class="fa-solid fa-robot me-2"></i> Trợ lý AI Nhóm 12</span>
+            <i class="fa-solid fa-xmark" style="cursor:pointer;" onclick="toggleChat()"></i>
+        </div>
+        <div class="chat-body" id="chatBody">
+            <div class="chat-message msg-bot">
+                Xin chào! Tôi là trợ lý ảo của Phòng khám Nhóm 12. Tôi có thể giúp gì cho bạn hôm nay?
+            </div>
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="chatInput" class="chat-input" placeholder="Gõ câu hỏi của bạn..." onkeypress="handleChatEnter(event)">
+            <button class="btn btn-primary btn-sm ms-2 rounded-circle w-30" onclick="sendChatMessage()" style="width: 40px; height: 40px;"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
@@ -358,6 +467,67 @@
         function logout() {
             localStorage.removeItem("loggedInUser");
             window.location.reload();
+        }
+
+        /* --- CHATBOT LOGIC --- */
+        function toggleChat() {
+            const chatWindow = document.getElementById('chatbot-window');
+            chatWindow.style.display = (chatWindow.style.display === 'flex') ? 'none' : 'flex';
+        }
+
+        function handleChatEnter(e) {
+            if (e.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
+        function appendMessage(text, sender) {
+            const chatBody = document.getElementById('chatBody');
+            const msgDiv = document.createElement('div');
+            // Xử lý markdown đơn giản: đổi **text** thành <b>text</b> và \n thành <br>
+            let formattedText = text.replace(/\\n/g, '<br>').replace(/\\*\\*(.*?)\\*\\*/g, '<b>$1</b>');
+            
+            msgDiv.className = 'chat-message ' + (sender === 'user' ? 'msg-user' : 'msg-bot');
+            msgDiv.innerHTML = formattedText;
+            chatBody.appendChild(msgDiv);
+            chatBody.scrollTop = chatBody.scrollHeight; // Cuộn xuống cùng
+        }
+
+        function sendChatMessage() {
+            const inputField = document.getElementById('chatInput');
+            const text = inputField.value.trim();
+            if (!text) return;
+
+            appendMessage(text, 'user');
+            inputField.value = '';
+
+            // Loading indicator
+            const chatBody = document.getElementById('chatBody');
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'chat-message msg-bot text-muted';
+            loadingDiv.id = 'chatLoading';
+            loadingDiv.innerHTML = '<i class="fa-solid fa-ellipsis fa-fade"></i>';
+            chatBody.appendChild(loadingDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text })
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('chatLoading').remove();
+                if (data.reply) {
+                    appendMessage(data.reply, 'bot');
+                } else {
+                    appendMessage('Xin lỗi, tôi gặp lỗi kết nối nội bộ.', 'bot');
+                }
+            })
+            .catch(err => {
+                document.getElementById('chatLoading').remove();
+                appendMessage('Mất kết nối máy chủ internet.', 'bot');
+            });
         }
     </script>
 </body>
