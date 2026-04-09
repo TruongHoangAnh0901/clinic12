@@ -16,6 +16,20 @@ import java.util.UUID;
 @RequestMapping("/api/upload")
 public class FileUploadController {
 
+    /**
+     * ⚠️ CẢNH BÁO QUAN TRỌNG - EPHEMERAL STORAGE ISSUE ⚠️
+     * 
+     * Tính năng upload file này đang lưu trực tiếp vào thư mục "uploads/" trên ổ cứng cục bộ.
+     * Khi deploy lên Render Free tier, toàn bộ file sẽ BỊ MẤT mỗi khi:
+     * - Server restart (sau khi sleep/wake up)
+     * - Deploy mới
+     * - Render tự động scale/restart
+     * 
+     * GIẢI PHÁP:
+     * - Sử dụng cloud storage (AWS S3, Cloudinary, Firebase Storage)
+     * - Hoặc upgrade lên Render paid tier với persistent disk
+     * - Hoặc lưu file vào database dưới dạng base64 (chỉ cho file nhỏ)
+     */
     private static final String UPLOAD_DIR = "uploads/";
 
     @PostMapping

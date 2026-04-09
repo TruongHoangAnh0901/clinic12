@@ -1,0 +1,30 @@
+services:
+  # Web Service Configuration
+  - type: web
+    name: clinic12-web
+    env: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: ./
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: DB_URL
+        fromDatabase:
+          name: clinic12-db
+          property: connectionString
+      - key: DB_USER
+        fromDatabase:
+          name: clinic12-db
+          property: user
+      - key: DB_PASS
+        fromDatabase:
+          name: clinic12-db
+          property: password
+
+  # Database Service Configuration
+databases:
+  - name: clinic12-db
+    databaseName: clinic12
+    user: clinic12_user
+    plan: free
